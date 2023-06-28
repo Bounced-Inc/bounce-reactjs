@@ -2,9 +2,10 @@ import {FC, useContext, useState} from 'react';
 import {GroupContext} from '@/contexts/GroupContext';
 
 class EditGroupProps {
+    name: string = '';
 }
 
-const EditGroup: FC<EditGroupProps> = ({ name }: any) => {
+const EditGroup: FC<EditGroupProps> = ({ name }) => {
     const { updateGroup } = useContext(GroupContext);
     const [newName, setNewName] = useState(name);
 

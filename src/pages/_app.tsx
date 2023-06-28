@@ -1,12 +1,12 @@
 import '../../styles/globals.css';
 import type {AppProps} from 'next/app';
-import { GroupProvider } from '@/contexts/GroupContext';
+import { GroupContextProvider } from '@/contexts/GroupContext';
 
 function MyApp({Component, pageProps}: AppProps) {
     return (
-        <GroupProvider>
+        <GroupContextProvider>
             <Component {...pageProps} />
-        </GroupProvider>
+        </GroupContextProvider>
     )
 }
 

@@ -1,85 +1,74 @@
-import React, { createContext, useState, ReactNode } from 'react';
+import React, { createContext, FC, useState } from 'react';
 
-interface Post {
-    title: string;
-    content: string;
-}
-
-interface Group {
+interface GroupType {
     name: string;
-    posts: Post[];
+    posts: Array<{
+        id: string;
+        title: string;
+        content: string;
+    }>;
 }
 
-interface IGroupContext {
-    groups: Group[];
+interface GroupContextProps {
+    groups: Array<GroupType>;
     addGroup: (name: string) => void;
     updateGroup: (oldName: string, newName: string) => void;
     deleteGroup: (name: string) => void;
     addPost: (groupName: string, title: string, content: string) => void;
-    updatePost: (groupName: string, oldTitle: string, newTitle: string, newContent: string) => void;
-    deletePost: (groupName: string, postTitle: string) => void;
+    updatePost: (groupName: string, postId: string, newTitle: string, newContent: string) => void;
+    deletePost: (groupName: string, title: string) => void;
 }
 
-const fallbackGroupContext: IGroupContext = {
+export const GroupContext = createContext<GroupContextProps>({
     groups: [],
-    addGroup: () => {console.log("No GroupProvider!")},
+    addGroup: () => {},
     updateGroup: () => {},
     deleteGroup: () => {},
     addPost: () => {},
     updatePost: () => {},
     deletePost: () => {},
-};
+});
 
-export const GroupContext = createContext<IGroupContext>(fallbackGroupContext);
+interface GroupContextProviderProps {
+    children: React.ReactNode;
+}
 
-export const GroupProvider = ({children}: { children: ReactNode }) => {
-    const [groups, setGroups] = useState<Array<{ name: string, posts: Array<{ title: string, content: string }> }>>([]);
+export const GroupContextProvider: FC<GroupContextProviderProps> = ({ children }) => {
+
+        const [groups, setGroups] = useState<Array<GroupType>>([]);
 
     const addGroup = (name: string) => {
-        const newGroup = {name, posts: []};
-        console.log('Adding group',newGroup);
-        setGroups(prevGroups => [...prevGroups, newGroup]);
+        setGroups([...groups, { name, posts: [] }]);
     };
 
     const updateGroup = (oldName: string, newName: string) => {
-        setGroups(prevGroups => prevGroups.map(group => group.name === oldName ? {...group, name: newName} : group));
+        setGroups(groups.map(group => group.name === oldName ? { ...group, name: newName } : group));
     };
 
     const deleteGroup = (name: string) => {
-        setGroups(prevGroups => prevGroups.filter(group => group.name !== name));
+        setGroups(groups.filter(group => group.name !== name));
     };
 
     const addPost = (groupName: string, title: string, content: string) => {
-        setGroups(prevGroups => prevGroups.map(group => {
+        const postId = Date.now().toString();
+        setGroups(groups.map(group => group.name === groupName ? { ...group, posts: [...group.posts, { id: postId, title, content }] } : group));
+    };
+
+    const updatePost = (groupName: string, postId: string, newTitle: string, newContent: string) => {
+        setGroups(groups.map(group => {
             if (group.name === groupName) {
-                const newPost = {title, content};
-                return {...group, posts: [...group.posts, newPost]};
+                const newPosts = group.posts.map(post => post.id === postId ? { ...post, title: newTitle, content: newContent } : post);
+                return { ...group, posts: newPosts };
             }
             return group;
         }));
     };
 
-    const updatePost = (groupName: string, oldTitle: string, newTitle: string, newContent: string) => {
-        setGroups(prevGroups => prevGroups.map(group => {
+    const deletePost = (groupName: string, postId: string) => {
+        setGroups(groups.map(group => {
             if (group.name === groupName) {
-                return {
-                    ...group,
-                    posts: group.posts.map(post => post.title === oldTitle ? {
-                        title: newTitle,
-                        content: newContent
-                    } : post)
-                };
-            }
-            return group;
-        }));
-    };
-    const deletePost = (groupName: string, postTitle: string) => {
-        setGroups(prevGroups => prevGroups.map(group => {
-            if (group.name === groupName) {
-                return {
-                    ...group,
-                    posts: group.posts.filter(post => post.title !== postTitle)
-                };
+                const newPosts = group.posts.filter(post => post.id !== postId);
+                return { ...group, posts: newPosts };
             }
             return group;
         }));

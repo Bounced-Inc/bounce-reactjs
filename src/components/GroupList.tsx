@@ -11,7 +11,7 @@ const GroupList = () => {
     }, [groups]);
 
     return (
-        <div>
+        <div className="flex flex-col items-center">
             {groups.length <= 0 ? (
                 <p>No groups!</p>
             ) : (
